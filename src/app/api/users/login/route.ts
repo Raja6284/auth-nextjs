@@ -18,6 +18,7 @@ export async function POST(request:NextRequest){
         if(!user){
             return NextResponse.json({error:"user not found"},{status:400})
         }
+        console.log("User exists")
 
         //check if password is correct
         const validPassword = await bcryptjs.compare(password,user.password)
@@ -35,19 +36,28 @@ export async function POST(request:NextRequest){
         //create token
         const token = await jwt.sign(
             tokenData,
-            process.env.TOKEN_SECRET,
+            process.env.TOKEN_SECRET!,
             {expiresIn:"1d"}
         )
-        console.log(token)
+        //console.log(token)
         const response = NextResponse.json({
             message:"Login successful",
             success:true
         })
 
-        response.cookies.set("token",token,{
-            httpOnly:true
-        })
+        // response.cookies.set("token",token,{
+        //     httpOnly:true
+        // })
 
+        // Set token in cookie
+        response.cookies.set("token", token, {
+            httpOnly: true,           // Ensure it cannot be accessed by JS
+            //secure: process.env.NODE_ENV === "production", // Secure in production
+            maxAge: 60 * 60 * 24,     // Expires in 1 day
+            //path: "/",                // Accessible across the app
+            //sameSite: "strict",       // Prevent CSRF
+        });
+        console.log("this is response cookies: ",response.cookies)
         return response
 
     }catch(error:any){
