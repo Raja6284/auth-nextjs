@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
 
     const path = request.nextUrl.pathname
 
-    const isPublic = path === '/login' || path === '/signup'
+    const isPublic = path === '/login' || path === '/signup' || path === '/verifyemail'
 
     const token = request.cookies.get('token')?.value || "" 
 
@@ -17,7 +17,11 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/', request.nextUrl))
     }
 
-    if(isProtectedRoute && !isPublic && !token){
+    if(isProtectedRoute && !token){
+      return NextResponse.redirect(new URL('/login', request.nextUrl))
+  }
+
+    if(!isPublic && !token){
         return NextResponse.redirect(new URL('/login', request.nextUrl))
     }
 
@@ -30,6 +34,7 @@ export const config = {
     '/profile/:path*',
     '/login',
     '/signup',
-    '/verifyemail'
+    '/verifyemail',
+    '/resetpassword'
   ]
 }

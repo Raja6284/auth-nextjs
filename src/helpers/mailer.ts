@@ -16,11 +16,13 @@ export const sendEmail = async({email,emailType,userId}:any)=>{
                 { new: true }
             )
             
-            console.log("This is updated user:",user)
+            //console.log("This is updated user:",user)
         }else if(emailType === 'RESET'){
-            await User.findByIdAndUpdate(userId,
-                {forgotPasswordToken:hashedToken,forgotPasswordTokenExpiry:Date.now() + 3600000}
+            const user = await User.findByIdAndUpdate(userId,
+                {forgotPasswordToken:hashedToken,forgotPasswordTokenExpiry:Date.now() + 3600000},
+                {new:true}
             )
+            console.log("updated user for reset:",user)
         }
         
 

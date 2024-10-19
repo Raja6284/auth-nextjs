@@ -2,34 +2,39 @@ import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import {connect} from "@/dbConfig/dbConfig"
 import User from "@/models/userModel";
+import bcryptjs from "bcryptjs"
 
-connect()
+connect();
 
-export async function POST(request:NextRequest){
-
+export async function POST(request:NextRequest) {
     try{
-    const reqBody = await request.json()
-    const {token} = reqBody
-    console.log("This token is of route.ts of verifyemail:", token)
 
-    const user = await User.findOne({verifyToken:token,verifyTokenExpiry:{$gt:Date.now()}})
+    const reqBody = await request.json()
+    const {token,newPassword} = reqBody
+    console.log("This token is of route.ts of resetpassword:", token)
+
+    const user = await User.findOne({forgotPasswordToken:token,forgotPasswordTokenExpiry:{$gt:Date.now()}})
 
     if(!user){
         return NextResponse.json({error:"Invalid or expired token"},{status:400})
     }
-    console.log("In route.ts of verifyemail:",user)
+    console.log("In route.ts of resetpassword:",user)
 
-    user.isVerified = true
+    //hash password
+    const salt = await bcryptjs.genSalt(10)
+    const hashedPassword = await bcryptjs.hash(newPassword,salt)
+
+    user.password = hashedPassword
     user.verifyToken = undefined
     user.verifyTokenExpiry = undefined
 
     await user.save();
 
     return NextResponse.json({
-        message :"email verified successfully",
+        message :"Password updated successfully",
         success : true
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     }catch(error:any){
         return NextResponse.json({error:error.message},{status:500})
     }
