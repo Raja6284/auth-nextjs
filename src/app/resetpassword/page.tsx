@@ -1,69 +1,58 @@
 "use client";
+import { useState } from "react";
 import axios from "axios";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export default function ResetPasswordPage() {
-    const router = useRouter();
-    const [token, setToken] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState(false);
+    const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const resetPassword = async () => {
-        if (newPassword !== confirmPassword) {
-            setError(true);
-            return;
-        }
+    const handleSubmit = async (e) => {
+        e.preventDefault();  // Prevent default form submission behavior
+        setLoading(true);     // Start loading indicator
 
         try {
-            await axios.post('/api/users/resetpassword', { token, newPassword });
-            setSuccess(true);  // Mark success
+            await axios.post("/api/users/resetpassword", { email });
+            toast.success("Password reset link sent to your email");
         } catch (error) {
-            setError(true);
-            console.log(error.response?.data);
+            toast.error("Failed to send reset link. Please try again.");
+        } finally {
+            setLoading(false);  // Stop loading indicator
         }
     };
 
-    useEffect(() => {
-        const urlToken = window.location.search.split("=")[1];
-        setToken(urlToken || "");
-    }, []);
-
-    // If the password reset was successful, redirect to the login page
-    useEffect(() => {
-        if (success) {
-            router.push("/login");
-        }
-    }, [success, router]);  // Trigger redirect when `success` is true
-
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen py-2 ">
-            <h1 className="text-4xl">Reset Password</h1>
-
-            <input
-                type="password"
-                placeholder="New Password"
-                className="p-2 border border-gray-300 rounded text-black"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <input
-                type="password"
-                placeholder="Confirm Password"
-                className="p-2 border border-gray-300 rounded mt-4 text-black"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            <button
-                onClick={resetPassword}
-                className="bg-blue-500 text-white p-2 rounded mt-4"
-            >
-                Reset Password
-            </button>
-
-            {error && <p className="text-red-500 mt-4">Error resetting password. Please try again.</p>}
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+                <h1 className="text-2xl font-bold mb-6 text-center">Reset Password</h1>
+                
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-4">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            Email Address
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            placeholder="Enter your email"
+                        />
+                    </div>
+                    
+                    <button
+                        type="submit"
+                        disabled={loading}  // Disable button while loading
+                        className={`w-full px-4 py-2 text-white font-semibold rounded-lg ${
+                            loading ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'
+                        } focus:outline-none transition duration-300 ease-in-out`}
+                    >
+                        {loading ? "Sending..." : "Submit"}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }

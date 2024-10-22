@@ -2,38 +2,31 @@ import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import {connect} from "@/dbConfig/dbConfig"
 import User from "@/models/userModel";
-import bcryptjs from "bcryptjs"
+import { sendEmail } from "@/helpers/mailer";
 
-connect();
+connect()
 
-export async function POST(request:NextRequest) {
+export async function POST(request:NextRequest){
     try{
+        const reqBody = await request.json()
+        const {email} = reqBody
+        console.log("This is the entered email: ",email)
 
-    const reqBody = await request.json()
-    const {token,newPassword} = reqBody
-    console.log("This token is of route.ts of resetpassword:", token)
+        const user = await User.findOne({email:email})
 
-    const user = await User.findOne({forgotPasswordToken:token,forgotPasswordTokenExpiry:{$gt:Date.now()}})
+        if(!user){
+            return NextResponse.json({error:"Please enter the correct email"},{status:400})
+        }
 
-    if(!user){
-        return NextResponse.json({error:"Invalid or expired token"},{status:400})
-    }
-    console.log("In route.ts of resetpassword:",user)
+        //sending resetPasswrod email
+        const verifyEmailInfo = await sendEmail({email,emailType:'RESET',userId:user._id})
+        console.log("resetpasswrod email sent: ",verifyEmailInfo)
 
-    //hash password
-    const salt = await bcryptjs.genSalt(10)
-    const hashedPassword = await bcryptjs.hash(newPassword,salt)
+        return NextResponse.json({
+            message:"Reset password email sent successfully",
+            success:true
+        })
 
-    user.password = hashedPassword
-    user.verifyToken = undefined
-    user.verifyTokenExpiry = undefined
-
-    await user.save();
-
-    return NextResponse.json({
-        message :"Password updated successfully",
-        success : true
-    })
 
     }catch(error:any){
         return NextResponse.json({error:error.message},{status:500})

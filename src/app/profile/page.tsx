@@ -21,11 +21,6 @@ export default function ProfilePage() {
         setData(res.data.data._id);
     };
 
-    const handleResetPassword = () => {
-        // Redirect to reset password page
-        router.push("/resetpassword");
-    };
-
     return (
         <div className="flex flex-col items-center justify-center min-h-screen py-8 bg-gradient-to-b from-indigo-500 to-purple-600 text-white">
             <div className="bg-white text-gray-900 p-8 rounded-lg shadow-xl w-full max-w-md">
@@ -57,14 +52,6 @@ export default function ProfilePage() {
                         className="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300 ease-in-out shadow-lg"
                     >
                         Get User Details
-                    </button>
-
-                    {/* Reset Password Button */}
-                    <button
-                        onClick={handleResetPassword}
-                        className="w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300 ease-in-out shadow-lg"
-                    >
-                        Reset Password
                     </button>
                 </div>
             </div>

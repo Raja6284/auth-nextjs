@@ -36,17 +36,35 @@ export const sendEmail = async({email,emailType,userId}:any)=>{
             }
         });
 
-        const mailOptions = {
-            from:"onlydealforyou@gmail.com",
-            to:email,
-            subject:emailType==='VERIFY'?"Verify you email":"Reset you password",
-            
-            html: `<p>Click <a href="${process.env.DOMAIN}/verifyemail?token=${hashedToken}">here</a> to ${emailType === "VERIFY" ? "verify your email" : "reset your password"}
-            or copy and paste the link below in your browser. <br> ${process.env.DOMAIN}/verifyemail?token=${hashedToken}
-            </p>`
+        let mailResponse;
+        let mailOptions;
+        if(emailType === 'VERIFY'){
+            mailOptions = {
+                from:"onlydealforyou@gmail.com",
+                to:email,
+                subject:"Verify you email",
+                
+                html: `<p>Click <a href="${process.env.DOMAIN}/verifyemail?token=${hashedToken}">here</a> to verify your email.
+                or copy and paste the link below in your browser. <br> ${process.env.DOMAIN}/verifyemail?token=${hashedToken}
+                </p>`
+            }
+    
+            mailResponse =  await transport.sendMail(mailOptions)
         }
 
-        const mailResponse =  await transport.sendMail(mailOptions)
+        if(emailType === 'RESET'){
+            mailOptions = {
+                from:"onlydealforyou@gmail.com",
+                to:email,
+                subject:"Reset your password",
+                html: `<p>Click <a href="${process.env.DOMAIN}/changepassword?token=${hashedToken}">here</a> to Reset your password
+                or copy and paste the link below in your browser. <br> ${process.env.DOMAIN}/changepassword?token=${hashedToken}
+                </p>`
+            }
+    
+            mailResponse =  await transport.sendMail(mailOptions)
+        }
+        
 
         return mailResponse
 
